@@ -1,0 +1,161 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/test.gni")
+import("../../../../../config.gni")
+
+module_output_path = "audio_framework/audio_framework_route/audio_endpoint"
+
+ohos_unittest("audio_endpoint_unit_test") {
+  testonly = true
+  module_out_path = module_output_path
+
+  cflags = [ "-fno-access-control" ]
+
+  sources = [ "./src/audio_endpoint_unit_test.cpp" ]
+
+  include_dirs = [
+    "../../../server/include",
+    "../../../../audio_service/common/include",
+    "../../../../audio_service/common",
+    "./include",
+    "../../../../../frameworks/native/audioqosmanager/include",
+    "../../../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../../../frameworks/native/audioinnercall/include",
+    "../../../../../services/audio_service/server/include",
+    "../../../../../services/audio_service/server/src",
+    "../../../../../services/audio_policy/client/include",
+  ]
+
+  configs = [ "../../../../../services/audio_service:audio_service_config" ]
+
+  deps = [
+    "../../../../../frameworks/native/audioeffect:audio_effect",
+    "../../../../../frameworks/native/audioqosmanager:audio_qosmanager",
+    "../../../../../frameworks/native/audioschedule:audio_schedule",
+    "../../../../../frameworks/native/audioutils:audio_utils",
+    "../../../../../frameworks/native/playbackcapturer:playback_capturer",
+    "../../../../../services/audio_service:audio_common",
+    "../../../../../services/audio_service:audio_service",
+    "../../../../audio_service:audio_process_service_static",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken_shared",
+    "access_token:libtokensetproc_shared",
+    "c_utils:utils",
+    "drivers_interface_audio:libeffect_proxy_1.0",
+    "eventhandler:libeventhandler",
+    "googletest:gmock",
+    "googletest:gtest",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_single",
+    "media_foundation:media_monitor_client",
+    "media_foundation:media_monitor_common",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "qos_manager:concurrent_task_client",
+  ]
+
+  defines = []
+  if (audio_framework_feature_low_latency) {
+    defines += [ "SUPPORT_LOW_LATENCY" ]
+  }
+
+  if (audio_framework_feature_inner_capturer) {
+    defines += [ "HAS_FEATURE_INNERCAPTURER" ]
+  }
+}
+
+ohos_unittest("audio_endpoint_plus_unit_test") {
+  testonly = true
+  module_out_path = module_output_path
+
+  cflags = [ "-fno-access-control" ]
+
+  sources = [ "./src/audio_endpoint_plus_unit_test.cpp" ]
+
+  include_dirs = [
+    "../../../server/include",
+    "../../../../audio_service/common/include",
+    "../../../../audio_service/common/include/dfx",
+    "../../../../audio_service/common",
+    "./include",
+    "../../../../../frameworks/native/audioqosmanager/include",
+    "../../../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../../../frameworks/native/audioinnercall/include",
+    "../../../../../services/audio_service/server/include",
+    "../../../../../services/audio_service/server/src",
+    "../../../../../services/audio_policy/client/include",
+    "../../../../../services/audio_service/client/include",
+    "../../../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../../../frameworks/native/audiopolicy/include",
+    "../../../../../frameworks/native/playbackcapturer/include",
+    "../../../../../frameworks/native/audioschedule/include",
+    "../../../../../frameworks/native/hdiadapter_new/include",
+    "../../../../../frameworks/native/audioclock/include",
+  ]
+
+  deps = [
+    "../../../../../frameworks/native/audioeffect:audio_effect",
+    "../../../../../frameworks/native/audioqosmanager:audio_qosmanager",
+    "../../../../../frameworks/native/audioschedule:audio_schedule",
+    "../../../../../frameworks/native/audioutils:audio_utils",
+    "../../../../../frameworks/native/hdiadapter_new:hdiadapter_new",
+    "../../../../../frameworks/native/playbackcapturer:playback_capturer",
+    "../../../../../frameworks/native/audioclock:audio_clock",
+    "../../../../../services/audio_service:audio_client",
+    "../../../../../services/audio_service:audio_common",
+    "../../../../../services/audio_service:audio_service",
+    "../../../../audio_service:audio_process_service_static",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken_shared",
+    "access_token:libtokensetproc_shared",
+    "c_utils:utils",
+    "drivers_interface_audio:libeffect_proxy_1.0",
+    "eventhandler:libeventhandler",
+    "googletest:gmock",
+    "googletest:gtest",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_single",
+    "media_foundation:media_monitor_client",
+    "media_foundation:media_monitor_common",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "qos_manager:concurrent_task_client",
+  ]
+
+  defines = []
+  if (!audio_framework_feature_new_engine_flag) {
+    external_deps += [
+      "pulseaudio:pulse",
+    ]
+    defines += [ "SUPPORT_OLD_ENGINE" ]
+  }
+  if (audio_framework_feature_low_latency) {
+    defines += [ "SUPPORT_LOW_LATENCY" ]
+  }
+
+  if (audio_framework_feature_inner_capturer) {
+    defines += [ "HAS_FEATURE_INNERCAPTURER" ]
+  }
+}

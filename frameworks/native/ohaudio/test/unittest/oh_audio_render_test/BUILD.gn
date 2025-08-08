@@ -1,0 +1,81 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+import("../../../../../../config.gni")
+
+module_output_path = "audio_framework/audio_framework_route/audio_ndk"
+
+config("audio_renderer_config") {
+  include_dirs = [
+    "../../../../audiocapturer/include",
+    "../../../../audiopolicy/include",
+    "../../../../audiorenderer/include",
+    "../../../../ohaudio",
+    "../../../../audiostream/include",
+    "../../../../../../interfaces/inner_api/native/audiocapturer/include",
+    "../../../../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../../../../interfaces/inner_api/native/audiorenderer/include",
+    "../../../../../../interfaces/inner_api/native/audiostream/include",
+    "../../../../../../services/audio_service/client/include",
+    "../../../../../../services/audio_service/test/example",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-fno-access-control",
+  ]
+
+  cflags_cc = cflags
+  cflags_cc += [ "-std=c++20" ]
+}
+
+config("audio_ohaudio_config") {
+  include_dirs = [
+    "../../../../../../interfaces/kits/c/",
+    "../../../../../../interfaces/kits/c/common/",
+    "../../../../../../interfaces/kits/c/audio_renderer/",
+    "../../../../../../interfaces/kits/c/audio_capturer/",
+    "../../../../audioutils/include",
+  ]
+}
+
+ohos_unittest("audio_oh_render_unit_test") {
+  module_out_path = module_output_path
+  include_dirs = [ "./include" ]
+
+  configs = [
+    ":audio_renderer_config",
+    ":audio_ohaudio_config",
+  ]
+
+  sources = [
+    "src/oh_audio_render_unit_test.cpp",
+    "src/oh_audio_render_getter_unit_test.cpp",
+    "src/oh_audio_render_setter_unit_test.cpp"
+  ]
+
+  deps = [
+    "../../../../../../services/audio_service:audio_client",
+    "../../../../audiorenderer:audio_renderer",
+    "../../../../ohaudio:ohaudio",
+  ]
+
+  external_deps = [
+    "googletest:gmock",
+    "googletest:gtest",
+    "hilog:libhilog"
+  ]
+}

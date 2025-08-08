@@ -1,0 +1,63 @@
+# Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/features.gni")
+import("//build/test.gni")
+import("../../../config.gni")
+
+ohos_fuzztest("AudioServerBalanceFuzzTest") {
+  module_out_path = "audio_framework/audio_framework_route"
+  fuzz_config_file = "../audioserverbalance_fuzzer"
+
+  include_dirs = [
+    "../../../frameworks/native/audioinnercall/include",
+    "../../../services/audio_service/server/include",
+  ]
+
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+
+  sources = [ "audio_server_balance_fuzzer.cpp" ]
+
+  configs = [ "../../../services/audio_service:audio_service_config" ]
+  cflags_cc = [ "-std=c++20" ]
+
+  deps = [
+    "../../../services/audio_service/idl:audio_framework_interface",
+    "../../../services/audio_service:audio_service_static",
+  ]
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "hdf_core:libhdi",
+    "hdf_core:libpub_utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "qos_manager:concurrent_task_client",
+    "safwk:system_ability_fwk",
+  ]
+
+  defines = []
+  if (use_libfuzzer || use_clang_coverage) {
+    defines += [ "TEST_COVERAGE" ]
+  }
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = [ ":AudioServerBalanceFuzzTest" ]
+}

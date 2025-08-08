@@ -1,0 +1,54 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+
+module_output_path = "audio_framework/audio_framework_route/audio_toneplayer"
+
+ohos_unittest("audio_toneplayer_unit_test") {
+  module_out_path = module_output_path
+  include_dirs = [
+    "../../include",
+    "../../../audioutils/include",
+    "./../../../../../interfaces/inner_api/native/audiocommon/include",
+    "./../../../../../interfaces/inner_api/native/audiorenderer/include",
+    "./../../../../../frameworks/native/audiorenderer/include",
+    "./../../../../../frameworks/native/audiopolicy/include",
+    "./../../../../../interfaces/inner_api/native/audiomanager/include",
+    "./../../../../../frameworks/native/audiostream/include",
+    "./../../../../../interfaces/inner_api/native/audiocapturer/include",
+    "./../../../../../frameworks/native/audiodefinitions/include",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-fno-access-control",
+  ]
+
+  defines = [ "FEATURE_DTMF_TONE" ]
+
+  sources = [ "audio_toneplayer_unit_test.cpp" ]
+
+  deps = [
+    "../../../toneplayer:audio_toneplayer",
+    "./../../../../../frameworks/native/audiorenderer:audio_renderer",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+  ]
+}

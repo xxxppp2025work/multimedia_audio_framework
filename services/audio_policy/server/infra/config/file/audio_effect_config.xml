@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<audio_effects_conf version="2.0">
+    <!-- List of effect libraries to load.
+         Each library must contain a "name" attribute and a "path" attribute.
+         The "name" attribute indicates the name of the library.
+         The "path" attribute specifies the relative path of the library .so file in /system/lib/.
+    -->
+    <libraries>
+        <library name="BasicEffect" path="libaudio_integration_basic.z.so"/>
+        <library name="Voip" path="libaudio_integration_voip.z.so"/>
+    </libraries>
+
+    <!-- List of effects to load.
+         Each library must contain a "name" attribute and a "library" attribute.
+         The "name" attribute indicates the name of the effect.
+         The "library" attribute specifies which library the effect belongs to. The value of the "library" attribute
+         must correspond to the "name" attribute of one "library" element in the "libraries" element.
+         Some effects may have "effectProperty" attributes, which indicate the property of the specified effects.
+    -->
+    <effects>
+        <effect name="eq" library="BasicEffect"/>
+        <effect name="drc" library="BasicEffect"/>
+        <effect name="voip" library="Voip">
+            <effectProperty mode="normal"/>
+            <effectProperty mode="personal"/>
+        </effect>
+    </effects>
+
+    <!-- List of effectChains to create.
+         Each effectChain must contain a "name" attribute and some "apply" subelements which contain an "effect"
+         attribute.
+         The "name" attribute indicates the name of the effectChain.
+         The "apply" element specifies the effects in the effectChain. One effectChain may contain one or more effects.
+         The value of the "effect" attribute must correspond to the "name" attribute of one "effect" element in the
+         "effects" element.
+    -->
+    <effectChains>
+        <effectChain name="EFFECTCHAIN_SPK_MUSIC">
+            <apply effect="eq"/>
+            <apply effect="drc"/>
+        </effectChain>
+        <effectChain name="EFFECTCHAIN_BT_MUSIC">
+            <apply effect="eq"/>
+            <apply effect="drc"/>
+        </effectChain>
+        <effectChain name="EFFECTCHAIN_VOIP_3A">
+            <apply effect="voip"/>
+        </effectChain>
+    </effectChains>
+
+    <!-- List of preProcess effectChains configuration.
+         This is used for preprocess effect configuration. For each effect scene, each effect mode and each device type,
+         one effectchain is selected for preprocess rendering.
+         The value of the "effectChain" attribute must correspond to the "name" attribute of one "effectChain" element
+         in the "effectChains" element.
+    -->
+    <preProcess>
+        <stream scene="SCENE_VOIP_3A">
+            <streamEffectMode mode="EFFECT_DEFAULT">
+                <devicePort type="DEVICE_TYPE_MIC" effectChain="EFFECTCHAIN_VOIP_3A"/>
+                <devicePort type="DEVICE_TYPE_BT" effectChain="EFFECTCHAIN_VOIP_3A"/>
+            </streamEffectMode>
+        </stream>
+    </preProcess>
+
+    <!-- List of postProcess effectChains configuration.
+         This is used for postprocess effect configuration. For each effect scene, each effect mode and each device
+         type, one effectchain is selected for postprocess rendering.
+         The value of the "effectChain" attribute must correspond to the "name" attribute of one "effectChain" element
+         in the "effectChains" element.
+         In addition, one default scene must be specified, which indicates the default effect scene. Some prior scenes
+         can be specified to indicate some effect scenes with high priority. The "maxExtSceneNumber" attribute
+         represents the maximum allowable number of concurrently active effect scenes (excluding prior scenes). When
+         the number of concurrently avtive effect scenes exceeds "maxExtSceneNumber", default effect scene will be used
+         instead of normal scenes. The concurrency of prior effect scenes is not subject to "maxExtSceneNumber".
+    -->
+    <postProcess>
+        <defaultScene>
+            <stream scene="SCENE_DEFAULT">
+                <streamEffectMode mode="EFFECT_DEFAULT">
+                    <devicePort type="DEVICE_TYPE_SPEAKER" effectChain="EFFECTCHAIN_SPK_MUSIC"/>
+                    <devicePort type="DEVICE_TYPE_BLUETOOTH_A2DP" effectChain="EFFECTCHAIN_BT_MUSIC"/>
+                </streamEffectMode>
+            </stream>
+        </defaultScene>
+        <priorScene>
+        </priorScene>
+        <normalScene maxExtSceneNumber="0">
+            <stream scene="SCENE_MUSIC">
+                <streamEffectMode mode="EFFECT_DEFAULT">
+                    <devicePort type="DEVICE_TYPE_SPEAKER" effectChain="EFFECTCHAIN_SPK_MUSIC"/>
+                    <devicePort type="DEVICE_TYPE_BLUETOOTH_A2DP" effectChain="EFFECTCHAIN_BT_MUSIC"/>
+                </streamEffectMode>
+            </stream>
+            <stream scene="SCENE_MOVIE">
+                <streamEffectMode mode="EFFECT_DEFAULT">
+                    <devicePort type="DEVICE_TYPE_SPEAKER" effectChain="EFFECTCHAIN_SPK_MUSIC"/>
+                    <devicePort type="DEVICE_TYPE_BLUETOOTH_A2DP" effectChain="EFFECTCHAIN_BT_MUSIC"/>
+                </streamEffectMode>
+            </stream>
+            <stream scene="SCENE_GAME">
+                <streamEffectMode mode="EFFECT_DEFAULT">
+                    <devicePort type="DEVICE_TYPE_SPEAKER" effectChain="EFFECTCHAIN_SPK_MUSIC"/>
+                    <devicePort type="DEVICE_TYPE_BLUETOOTH_A2DP" effectChain="EFFECTCHAIN_BT_MUSIC"/>
+                </streamEffectMode>
+            </stream>
+            <stream scene="SCENE_SPEECH">
+                <streamEffectMode mode="EFFECT_DEFAULT">
+                    <devicePort type="DEVICE_TYPE_SPEAKER" effectChain="EFFECTCHAIN_SPK_MUSIC"/>
+                    <devicePort type="DEVICE_TYPE_BLUETOOTH_A2DP" effectChain="EFFECTCHAIN_BT_MUSIC"/>
+                </streamEffectMode>
+            </stream>
+            <stream scene="SCENE_RING">
+                <streamEffectMode mode="EFFECT_DEFAULT">
+                    <devicePort type="DEVICE_TYPE_SPEAKER" effectChain="EFFECTCHAIN_SPK_MUSIC"/>
+                    <devicePort type="DEVICE_TYPE_BLUETOOTH_A2DP" effectChain="EFFECTCHAIN_BT_MUSIC"/>
+                </streamEffectMode>
+            </stream>
+        </normalScene>
+        <!-- List of the mapping relationship from "streamUsage" to "scene".
+             For each stream usage listed below, this element indicates which effect scene the corresponding stream
+             usage will be mapped to. This may affect the rendering effects for different stream usages.
+             For stream usages not listed below, the effect mode of them will be defaulted to EFFECT_NONE, which means
+             the corresponding audio renderer will defaulted to bypass the effect rendering.
+        -->
+        <sceneMap>
+            <streamUsage name="STREAM_USAGE_UNKNOWN" scene="SCENE_MUSIC"/>
+            <streamUsage name="STREAM_USAGE_MUSIC" scene="SCENE_MUSIC"/>
+            <streamUsage name="STREAM_USAGE_GAME" scene="SCENE_GAME"/>
+            <streamUsage name="STREAM_USAGE_MOVIE" scene="SCENE_MOVIE"/>
+            <streamUsage name="STREAM_USAGE_AUDIOBOOK" scene="SCENE_SPEECH"/>
+            <streamUsage name="STREAM_USAGE_VOICE_ASSISTANT" scene="SCENE_SPEECH"/>
+            <streamUsage name="STREAM_USAGE_VOICE_MESSAGE" scene="SCENE_MUSIC"/>
+            <streamUsage name="STREAM_USAGE_ACCESSIBILITY" scene="SCENE_SPEECH"/>
+            <streamUsage name="STREAM_USAGE_ALARM" scene="SCENE_RING"/>
+            <streamUsage name="STREAM_USAGE_RINGTONE" scene="SCENE_RING"/>
+        </sceneMap>
+    </postProcess>
+</audio_effects_conf>

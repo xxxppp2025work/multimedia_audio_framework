@@ -1,0 +1,184 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../../config.gni")
+
+config("audio_config") {
+  include_dirs = [
+    "../audiocapturer/include",
+    "../audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiocapturer/include",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../interfaces/inner_api/native/audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiostream/include",
+    "../../../services/audio_service/client/include",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+}
+
+if (!audio_framework_feature_opensl_es) {
+  group("opensles") {
+    deps = []
+  }
+} else {
+  ohos_shared_library("opensles") {
+    sanitize = {
+      cfi = true
+      cfi_cross_dso = true
+      cfi_vcall_icall_only = true
+      debug = false
+      integer_overflow = true
+      ubsan = true
+      boundary_sanitize = true
+    }
+    include_dirs = [
+      "include",
+      "../../../interfaces/inner_api/native/andiocapturer/include/",
+      "../../../interfaces/inner_api/native/andiomanager/include/",
+      "../../../interfaces/inner_api/native/andiorenderer/include/",
+    ]
+
+    configs = [ ":audio_config" ]
+
+    sources = [
+      "src/adapter/audiocapturer_adapter.cpp",
+      "src/adapter/audioplayer_adapter.cpp",
+      "src/adapter/readorwritecallback_adapter.cpp",
+      "src/itf/engine_itf.cpp",
+      "src/itf/object_itf.cpp",
+      "src/itf/openharmony_buffer_queue_itf.cpp",
+      "src/itf/play_itf.cpp",
+      "src/itf/record_itf.cpp",
+      "src/itf/volume_itf.cpp",
+      "src/obj/audiocapturer_obj.cpp",
+      "src/obj/audioplayer_obj.cpp",
+      "src/obj/engine_obj.cpp",
+      "src/obj/output_mix_obj.cpp",
+      "src/util/builder.cpp",
+      "src/util/table_struct.cpp",
+    ]
+
+    cflags = [ "-Werror" ]
+
+    deps = [
+      "../../../services/audio_service:audio_client",
+      "../audiocapturer:audio_capturer",
+      "../audiorenderer:audio_renderer",
+    ]
+
+    external_deps = [
+      "c_utils:utils",
+      "hilog:libhilog",
+      "ipc:ipc_single",
+      "opensles:libSLES",
+    ]
+
+    output_name = "OpenSLES"
+    output_extension = "so"
+    innerapi_tags = [ "platformsdk" ]
+    subsystem_name = "multimedia"
+    part_name = "audio_framework"
+  }
+}
+
+group("audio_opensles_test_packages") {
+  deps = [
+    ":audio_opensles_player_test",
+    ":audio_opensles_recorder_test",
+  ]
+}
+
+config("audio_operation_config") {
+  include_dirs = [
+    "../audiocapturer/include",
+    "../audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiocapturer/include",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../interfaces/inner_api/native/audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiostream/include",
+    "../../../services/audio_service/client/include",
+    "../../../services/audio_service/test/example",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+}
+
+config("audio_opensles_config") {
+  include_dirs = [ "include" ]
+}
+
+if (!audio_framework_feature_opensl_es) {
+  group("audio_opensles_player_test") {
+    deps = []
+  }
+} else {
+  ohos_executable("audio_opensles_player_test") {
+    install_enable = false
+
+    sources = [ "test/example/audio_opensles_player_test.cpp" ]
+
+    configs = [
+      ":audio_opensles_config",
+      ":audio_operation_config",
+    ]
+
+    deps = [ ":opensles" ]
+
+    external_deps = [
+      "hilog:libhilog",
+      "opensles:libSLES",
+    ]
+
+    part_name = "audio_framework"
+    subsystem_name = "multimedia"
+  }
+}
+
+if (!audio_framework_feature_opensl_es) {
+  group("audio_opensles_recorder_test") {
+    deps = []
+  }
+} else {
+  ohos_executable("audio_opensles_recorder_test") {
+    install_enable = false
+
+    sources = [ "test/example/audio_opensles_recorder_test.cpp" ]
+
+    configs = [
+      ":audio_opensles_config",
+      ":audio_operation_config",
+    ]
+
+    deps = [ ":opensles" ]
+
+    external_deps = [
+      "bounds_checking_function:libsec_shared",
+      "c_utils:utils",
+      "hilog:libhilog",
+      "opensles:libSLES",
+    ]
+
+    part_name = "audio_framework"
+    subsystem_name = "multimedia"
+  }
+}

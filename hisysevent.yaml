@@ -1,0 +1,318 @@
+#  Copyright (c) 2022 Huawei Device Co., Ltd.
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+domain: AUDIO
+
+DEVICE_CHANGE:
+  __BASE: {type: BEHAVIOR, level: MINOR, tag: PowerStats, desc: audio output device}
+  ISOUTPUT: {type: INT32, desc: is output device}
+  STREAMID: {type: INT32, desc: stream id}
+  STREAMTYPE: {type: INT32, desc: stream type}
+  DEVICETYPE: {type: INT32, desc: device type}
+  NETWORKID: {type: STRING, desc: network id}
+  ADDRESS: {type: STRING, desc: device address}
+  DEVICE_DETAILED_CATEGORY: {type: STRING, desc: device detailed category}
+
+VOLUME_CHANGE:
+  __BASE: {type: BEHAVIOR, level: MINOR, tag: PowerStats, desc: audio input device}
+  ISOUTPUT: {type: INT32, desc: output device}
+  STREAMID: {type: INT32, desc: stream id}
+  APP_UID: {type: INT32, desc: user id}
+  APP_PID: {type: INT32, desc: process id}
+  STREAMTYPE: {type: INT32, desc: stream type}
+  VOLUME: {type: FLOAT, desc: audio volume}
+  SYSVOLUME: {type: FLOAT, desc: sys volume}
+  VOLUMEFACTOR: {type: FLOAT, desc: stream volume factor}
+  POWERVOLUMEFACTOR: {type: FLOAT, desc: power volume factor}
+
+STREAM_CHANGE:
+  __BASE: {type: BEHAVIOR, level: MINOR, tag: PowerStats, desc: capturer state change}
+  ISOUTPUT: {type: INT32, desc: output device}
+  STREAMID: {type: INT32, desc: stream id}
+  UID: {type: INT32, desc: user id}
+  PID: {type: INT32, desc: process id}
+  TRANSACTIONID: {type: UINT64, desc: transaction id}
+  STREAMTYPE: {type: INT32, desc: stream type}
+  STATE: {type: INT32, desc: audio state}
+  DEVICETYPE: {type: INT32, desc: device type}
+  NETWORKID: {type: STRING, desc: network id}
+
+STREAM_STANDBY:
+  __BASE: {type: BEHAVIOR, level: MINOR, tag: PowerStats, desc: render stream standby state change}
+  STREAMID: {type: INT32, desc: stream id}
+  STANDBY: {type: INT32, desc: standby state}
+
+HEADSET_CHANGE:
+  __BASE: {type: BEHAVIOR, level: MINOR, tag: PowerStats, desc: headset connection state}
+  ISCONNECT: {type: INT32, desc: is plugged in}
+  HASMIC: {type: INT32, desc: mic available}
+  DEVICETYPE: {type: INT32, desc: device type}
+
+BACKGROUND_SILENT_PLAYBACK:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: application play silently background}
+  APP_NAME: {type: STRING, desc: application name}
+  APP_VERSION_CODE: {type: UINT32, desc: application version code}
+  TIMES: {type: UINT32, desc: how many times when this event happens}
+
+BG_SILENT_PLAYBACK:
+  __BASE: {type: BEHAVIOR, level: MINOR, tag: PowerStats, desc: report the behavior of silent background playback concerned by power consumption detection }
+  APP_NAME: {type: STRING, desc: application name}
+  APP_VERSION_CODE: {type: UINT32, desc: application version code}
+
+LOAD_CONFIG_ERROR:
+  __BASE: {type: FAULT, level: CRITICAL, desc: load configuration failed on audio policy service startup}
+  CATEGORY: {type: UINT16, desc: category of audio policy configuration in uint16}
+
+LOAD_EFFECT_ENGINE_ERROR:
+  __BASE: {type: FAULT, level: CRITICAL, desc: load effect engine failed on audio service startup}
+  ENGINE_TYPE: {type: UINT16, desc: type of audio effect engine in uint16}
+
+AUDIO_SERVICE_STARTUP_ERROR:
+  __BASE: {type: FAULT, level: CRITICAL, desc: audio service start up failed}
+  SERVICE_ID: {type: UINT8, desc: audio service id}
+  ERROR_CODE: {type: INT32, desc: error code}
+
+AUDIO_STREAM_EXHAUSTED_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: audio stream for playback is exhausted}
+  DUBIOUS_APP: {type: STRING, desc: dubious application name which used most resources when this error happens}
+  TIMES: {type: UINT32, desc: how many times when this error happens}
+
+AUDIO_STREAM_CREATE_ERROR_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: audio stream create error}
+  APP_NAME: {type: STRING, desc: application name who created audio stream error}
+  IS_PLAYBACK: {type: BOOL, desc: created stream is used for playback or capture}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  ERROR_CODE: {type: INT32, desc: error code}
+  TIMES: {type: UINT32, desc: how many times when this error happen}
+
+STREAM_PROPERTY_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: audio stream property statistic}
+  IS_PLAYBACK: {type: BOOL, desc: created stream is used for playback or capture}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  APP_NAME: {type: STRING, desc: Application name which is using this stream}
+  ENCODING_TYPE: {type: UINT8, desc: encoding type of this stream}
+  CHANNEL_LAYOUT: {type: UINT64, desc: channel layout of this stream}
+  DURATION: {type: UINT32, desc: duration of this stream}
+
+STREAM_UTILIZATION_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: audio stream utilization statistic}
+  IS_PLAYBACK: {type: BOOL, desc: created stream is used for playback or capture}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  PIPE_TYPE: {type: UINT8, desc: pipe type e.g. normal/lowlatency/offload/multichannel e.t.c.}
+  APP_NAME: {type: STRING, desc: Application name which is using this stream}
+  SAMPLE_RATE: {type: UINT32, desc: sample rate of this stream}
+  EFFECT_CHAIN: {type: UINT8, desc: effect chain of this stream}
+  DURATION: {type: UINT32, desc: duration of this stream}
+
+AUDIO_DEVICE_UTILIZATION_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: audio device utilization statistic}
+  DEVICE_TYPE: {type: UINT8, desc: audio device type}
+  IS_PLAYBACK: {type: BOOL, desc: this stream is used for playback or capture}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  DURATION: {type: UINT32, desc: duration of using this devices}
+
+BT_UTILIZATION_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: blue tooth device utilization statistic}
+  BT_TYPE: {type: UINT8, desc: blue tooth type}
+  IS_PLAYBACK: {type: BOOL, desc: this stream is used for playback or capture}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  DURATION: {type: UINT32, desc: duration of using this devices}
+
+PERFORMANCE_UNDER_OVERRUN_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: underrun or overrun statistic}
+  APP_NAME: {type: STRING, desc: Application name whose audio stream has underrun or overrun}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  PIPE_TYPE: {type: UINT8, desc: pipe type e.g. normal/lowlatency/offload/multichannel e.t.c.}
+  IS_PLAYBACK: {type: BOOL, desc: this stream is used for playback or capture}
+  TIMES: {type: UINT32, desc: how many times when this event happend}
+
+PLAYBACK_VOLUME_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: playback volume statistic}
+  STREAM_TYPE: {type: UINT8, desc: StreamUsage of playback stream}
+  LEVEL: {type: INT32, desc: volume level}
+  DEVICE_TYPE: {type: UINT8, desc: audio device type}
+  DURATION: {type: UINT32, desc: duration of this volume level}
+
+MUTED_CAPTURE_STATS:
+  __BASE: {type: STATISTIC, level: MINOR, desc: muted audio capture statistic}
+  STREAM_TYPE: {type: UINT8, desc: SourceType of audio capture stream}
+  DEVICE_TYPE: {type: UINT8, desc: audio device type}
+  DURATION: {type: UINT32, desc: duration of muted capture}
+
+AUDIO_ROUTE_CHANGE:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: audio route change}
+  TIMESTAMP: {type: UINT64, desc: when does this change happens}
+  REASON: {type: UINT8, desc: route change reason}
+  DEVICE_TYPE_BEFORE_CHANGE: {type: UINT8, desc: audio device type before change}
+  DEVICE_TYPE_AFTER_CHANGE: {type: UINT8, desc: audio device type after change}
+  PRE_AUDIO_SCENE: {type: INT8, desc: previous audio scene}
+  CUR_AUDIO_SCENE: {type: INT8, desc: current audio scene}
+  DEVICE_LIST: {type: STRING, desc: current device list}
+  ROUTER_TYPE: {type: UINT8, desc: device selection routing policy}
+
+DB_ACCESS_EXCEPTION:
+  __BASE: {type: FAULT, level: CRITICAL, desc: database access exception}
+  DB_TYPE: {type: STRING, desc: database access type}
+  ERROR_CASE: {type: UINT32, desc: error case}
+  ERROR_MSG: {type: INT32, desc: error message}
+  ERROR_DESCRIPTION: {type: STRING, desc: error description}
+
+AUDIO_PIPE_CHANGE:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: audio pipe change}
+  APP_NAME: {type: STRING, desc: application name}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+  IS_PLAYBACK: {type: BOOL, desc: this stream is used for playback or capture}
+  PIPE_TYPE_BEFORE_CHANGE: {type: UINT8, desc: pipe type e.g. normal/lowlatency/offload/multichannel e.t.c.}
+  PIPE_TYPE_AFTER_CHANGE: {type: UINT8, desc: pipe type e.g. normal/lowlatency/offload/multichannel e.t.c.}
+  REASON: {type: UINT8, desc: audio pipe change reason}
+
+AUDIO_FOCUS_MIGRATE:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: audio force migrate between loacal device and remote device}
+  DEVICE_DESC: {type: STRING, desc: device desc}
+  APP_NAME: {type: STRING, desc: application whose focus is migrated}
+  MIGRATE_DIRECTION: {type: UINT8, desc: migrate direction}
+
+SET_FORCE_USE_AUDIO_DEVICE:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: Forcibly select an audio playback device}
+  APP_NAME: {type: STRING, desc: application name who has forcibly select an audio playback device}
+  DEVICE_TYPE: {type: UINT8, desc: audio device type which is set force used}
+  IS_PLAYBACK: {type: BOOL, desc: this stream is used for playback or capture}
+  STREAM_TYPE: {type: UINT8, desc: stream type which can be either StreamUsage in playback or SourceType in capture}
+
+AI_VOICE_NOISE_SUPPRESSION:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: AI voice noise suppression change}
+  CURRENT_VALUE: {type: INT32, desc: current value after operation triggered}
+
+VOLUME_SUBSCRIBE:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: Subscribe to volume key events}
+  SUBSCRIBE_KEY: {type: STRING, desc: Subscribed events}
+  SUBSCRIBE_RESULT: {type: UINT32, desc: Subscribed event results}
+
+HDI_EXCEPTION:
+  __BASE: {type: FAULT, level: CRITICAL, desc: hdi exception}
+  HDI_TYPE: {type: UINT8, desc: hdi type}
+  ERROR_CASE: {type: UINT32, desc: error case}
+  ERROR_MSG: {type: INT32, desc: error msg}
+  ERROR_DESCRIPTION: {type: STRING, desc: error description}
+
+APP_WRITE_MUTE:
+  __BASE: {type: STATISTIC, level: CRITICAL, desc: APP write mute data}
+  APP_BUNDLE_NAME: {type: STRING, desc: the app bundle name}
+  STREAM_TYPE: {type: UINT8, desc: stream type}
+  SESSION_ID: {type: UINT32, desc: the audio stream id like 100001}
+  STREAM_VOLUME: {type: FLOAT, desc: the volume of the steam}
+  MUTE_STATE: {type: UINT8, desc: mute state of the stream}
+  APP_BACKGROUND_STATE: {type: UINT8, desc: background state}
+  MUTE_PLAY_START_TIME: {type: INT64, desc: the time when app starts writing mute data}
+  MUTE_PLAY_DURATION: {type: UINT32, desc: the duration of mute play}
+
+JANK_PLAYBACK:
+  __BASE: {type: FAULT, level: CRITICAL, desc: audio playback jank event}
+  REASON: {type: UINT8, desc: report jank reason}
+  PERIOD_MS: {type: UINT32, desc: jank time}
+  PIPE_TYPE: {type: UINT8, desc: pipe type}
+  HDI_ADAPTER: {type: UINT8, desc: hdi adapter}
+  POSITION: {type: UINT8, desc: jank position}
+  APP_NAME: {type: STRING, desc: application name}
+
+STREAM_FREEZEN:
+  __BASE: {type: FAULT, level: CRITICAL, desc: audio stream freezen event}
+  APP_NAME: {type: STRING, desc: application name}
+  TIME_INTERVAL: {type: INT64, desc: check time interval}
+
+EXCLUDE_OUTPUT_DEVICE:
+  __BASE: {type: BEHAVIOR, level: MINOR, desc: Exclude/Unexclude an audio output device}
+  APP_NAME: {type: STRING, desc: application name who has excluded/unexcluded an audio output device}
+  EXCLUSION_STATUS: {type: UINT8, desc: audio device exclusion status}
+  AUDIO_DEVICE_USAGE: {type: UINT8, desc: audio device usage}
+  DEVICE_TYPE: {type: UINT8, desc: audio device type which is excluded}
+
+PLAY_AUDIO_STATS:
+  __BASE: {type: STATISTIC, level: CRITICAL, desc: Audio stream statistics}
+  APP_NAME: {type: STRING, desc: application name}
+  APP_VERSION: {type: STRING, desc: application version}
+  INTERRUPT_ACTION: {type: UINT32, desc: audio renderer stream usage }
+  INTERRUPT_TIMESTAMP: {type: UINT64, desc: interrupt timestamp }
+  INTERRUPT_INFO: {type: UINT32, desc: interrupt info }
+  INTERRUPT_EFFECT: {type: STRING, desc: interrupted application info }
+  RENDERER_ACTION: {type: UINT32, desc: audio renderer state }
+  RENDERER_TIMESTAMP: {type: UINT64, desc: audio renderer timestamp }
+  RENDERER_INFO: {type: UINT32, desc: audio renderer info }
+  RENDERER_STATS: {type: STRING, desc: audio renderer end statistics }
+  RECORDER_ACTION: {type: UINT32, desc: audio capturer state }
+  RECORDER_TIMESTAMP: {type: UINT64, desc: audio capturer timestamp }
+  RECORDER_INFO: {type: UINT32, desc: audio capturer info }
+  RECORDER_STATS: {type: STRING, desc: audio capturer end statistics }
+  APP_STATE: {type: UINT8, desc: app is background or foreground }
+  APP_STATE_TIMESTAMP: {type: UINT64, desc: app state change timestamp }
+  SUMMARY: {type: UINT64, desc: summary }
+
+HDF_AUDIO_ERROR_EVENT:
+  __BASE: {type: FAULT, level: CRITICAL, tag: HdfAudio, desc: HdfAudioErrorEvent}
+  ERROR_DESC: {type: STRING, desc: error descriptor}
+  ERROR_CODE: {type: INT32, desc: error code}
+  OVER_TIME: {type: INT32, desc: over time}
+
+SYSTEM_TONE_PLAYBACK:
+  __BASE: {type: BEHAVIOR, level: CRITICAL, desc: System sound plays event}
+  SYSTEM_SOUND_TYPE: {type: INT32, arrsize: 100, desc: configed sound type}
+  CLIENT_UID: {type: INT32, arrsize: 100, desc: client uid}
+  DEVICE_TYPE: {type: INT32, arrsize: 100, desc: device  type}
+  ERROR_CODE: {type: INT32, arrsize: 100, desc: error code}
+  ERROR_REASON: {type: STRING, arrsize: 100, desc: error reason}
+  MUTE_STATE: {type: BOOL, arrsize: 100, desc: mute state}
+  MUTE_HAPTICS: {type: BOOL, arrsize: 100, desc: mute haptics state}
+  RING_MODE: {type: UINT8, arrsize: 100, desc: ring mode}
+  STREAM_TYPE: {type: INT32, arrsize: 100, desc: stream type}
+  VIBRATION_STATE: {type: BOOL, arrsize: 100, desc: vibration state}
+  VOLUME_LEVEL: {type: UINT8, arrsize: 100, desc: volume level}
+  TIME_STAMP: {type: INT64, arrsize: 100, desc: the time stamp}
+  
+RECORD_ERROR:
+  __BASE: {type: FAULT, level: CRITICAL, tag: AudioRecord, desc: AudioRecordErrorEvent}
+  INCOMING_SOURCE: {type: UINT8, desc: source of incoming record}
+  INCOMING_PID: {type: INT32, desc: pid of incoming record}
+  INCOMING_PKG: {type: STRING, desc: pkg of incoming record}
+  ACTIVE_SOURCE: {type: UINT8, desc: source of active record}
+  ACTIVE_PID: {type: INT32, desc: pid of active record}
+  ACTIVE_PKG: {type: STRING, desc: pkg of active record}
+  REASON: {type: INT32, desc: reason}
+
+STREAM_OCCUPANCY:
+  __BASE: {type: STATISTIC, level: MINOR, desc: stream occupancy event}
+  IS_PLAYBACK: {type: BOOL, desc: is playback or record}
+  SESSIONID: {type: INT32, desc: sessionid}
+  UID: {type: INT32, desc: uid of app}
+  PKGNAME: {type: STRING, desc: pkgname of app}
+  STREAM_OR_SOURCE_TYPE: {type: INT32, desc: streamusage or sourcetype}
+  START_TIME: {type: INT64, desc: time of start}
+  UPLOAD_TIME: {type: INT64, desc: time of upload}
+
+ADD_REMOVE_CUSTOMIZED_TONE:
+  __BASE: {type: STATISTIC, level: CRITICAL, desc: add or remove customized tone}
+  ADD_REMOVE_OPERATION: {type: BOOL, arrsize: 100, desc: add or remove operation}
+  APP_NAME: {type: STRING, arrsize: 100, desc: application name}
+  FILE_SIZE: {type: UINT32, arrsize: 100, desc: file size}
+  RINGTONE_CATEGORY: {type: INT32, arrsize: 100, desc: ringtone category}
+  MEDIA_TYPE: {type: INT8, arrsize: 100, desc: media type}
+  MIME_TYPE: {type: STRING, arrsize: 100, desc: mime type}
+  TIMESTAMP: {type: UINT64, arrsize: 100, desc: time stamp}
+  RESULT: {type: INT8, arrsize: 100, desc: result}
+
+DEVICE_CHANGE_EXCEPTION:
+  __BASE: {type: FAULT, level: CRITICAL, desc: device change exception event}
+  CHANGE_REASON: {type: UINT8, desc: reason for triggering device changes}
+  DEVICE_TYPE: {type: INT32, desc: device type}
+  ERROR_CASE: {type: UINT32, desc: error case}
+  ERROR_MSG: {type: INT32, desc: error message}
+  ERROR_DESCRIPTION: {type: STRING, desc: error description}

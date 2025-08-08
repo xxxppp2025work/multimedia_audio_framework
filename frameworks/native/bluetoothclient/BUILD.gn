@@ -1,0 +1,67 @@
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../../audio_framework_test_sources.gni")
+import("../../../config.gni")
+
+audio_ohos_library("audio_bluetooth_client") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+  sources = [
+    "audio_bluetooth_manager.cpp",
+    "bluetooth_device_manager.cpp",
+    "bluetooth_sco_manager.cpp",
+    "bluetooth_hfp_interface.cpp",
+    "bluetooth_device_utils.cpp",
+  ]
+
+  include_dirs = [
+    "../../../services/audio_policy/server/include/service/interface",
+    "../../../services/audio_service/client/include",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../audioutils/include",
+  ]
+
+  deps = [
+    "../../../services/audio_policy:audio_foundation",
+    "../audioutils:audio_utils",
+  ]
+
+  external_deps = [
+    "bluetooth:btframework",
+    "c_utils:utils",
+    "hdf_core:libhdf_ipc_adapter",
+    "hdf_core:libhdi",
+    "hdf_core:libpub_utils",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "ipc:ipc_single",
+  ]
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+  version_script = "libaudio_bluetooth_client.versionscript"
+}

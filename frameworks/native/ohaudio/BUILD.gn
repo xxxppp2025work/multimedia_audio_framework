@@ -1,0 +1,220 @@
+# Copyright (c) 2023-2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../../config.gni")
+
+config("audio_config") {
+  include_dirs = [
+    "../audiocapturer/include",
+    "../audiorenderer/include",
+    "../audioutils/include/",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiocapturer/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../interfaces/inner_api/native/audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiostream/include",
+    "../../../services/audio_service/client/include",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+}
+
+ohos_shared_library("ohaudio") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  include_dirs = [
+    "../../../interfaces/kits/c/",
+    "../../../interfaces/kits/c/common/",
+    "../../../interfaces/kits/c/audio_renderer/",
+    "../../../interfaces/kits/c/audio_capturer/",
+    "../../../interfaces/kits/c/audio_manager/",
+    "../../native/audiopolicy/include/",
+  ]
+
+  configs = [ ":audio_config" ]
+
+  sources = [
+    "./OHAudioCapturer.cpp",
+    "./OHAudioCommon.cpp",
+    "./OHAudioDeviceDescriptor.cpp",
+    "./OHAudioManager.cpp",
+    "./OHAudioRenderer.cpp",
+    "./OHAudioRoutingManager.cpp",
+    "./OHAudioSessionManager.cpp",
+    "./OHAudioStreamBuilder.cpp",
+    "./OHAudioStreamManager.cpp",
+    "./OHAudioVolumeManager.cpp",
+    "./OHAudioWorkgroup.cpp",
+    "./OHAudioResourceManager.cpp",
+  ]
+
+  deps = [
+    "../../../services/audio_service:audio_client",
+    "../audiocapturer:audio_capturer",
+    "../audiorenderer:audio_renderer",
+  ]
+  cflags = [ "-Werror" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single"
+  ]
+
+  innerapi_tags = [ "ndk" ]
+
+  output_name = "ohaudio"
+  output_extension = "so"
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+}
+
+group("oh_audio_renderer_test_packages") {
+  deps = [
+    ":oh_audio_capturer_test",
+    ":oh_audio_renderer_test",
+    ":oh_audio_session_manager_test",
+  ]
+}
+
+ohos_executable("oh_audio_capturer_test") {
+  install_enable = false
+
+  include_dirs = [
+    "../../../interfaces/kits/c/",
+    "../../../interfaces/kits/c/common/",
+    "../../../interfaces/kits/c/audio_renderer/",
+    "../../../interfaces/kits/c/audio_capturer/",
+  ]
+
+  sources = [ "test/example/oh_audio_capturer_test.cpp" ]
+
+  configs = [ ":audio_config" ]
+
+  deps = [ ":ohaudio" ]
+
+  external_deps = [ "hilog:libhilog" ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
+
+ohos_executable("oh_audio_capturer_lowlatency_test") {
+  install_enable = false
+
+  include_dirs = [
+    "../../../interfaces/kits/c/",
+    "../../../interfaces/kits/c/common/",
+    "../../../interfaces/kits/c/audio_renderer/",
+    "../../../interfaces/kits/c/audio_capturer/",
+    "../audioutils/include",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../services/audio_service/client/include",
+  ]
+
+  sources = [ "test/example/oh_audio_capturer_lowlatency_test.cpp" ]
+
+  configs = [ ":audio_config" ]
+
+  deps = [
+    ":ohaudio",
+    "../audioutils:audio_utils",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
+
+ohos_executable("oh_audio_renderer_test") {
+  install_enable = false
+
+  include_dirs = [
+    "../../../interfaces/kits/c/",
+    "../../../interfaces/kits/c/common/",
+    "../../../interfaces/kits/c/audio_renderer/",
+    "../../../interfaces/kits/c/audio_capturer/",
+  ]
+
+  sources = [ "test/example/oh_audio_renderer_test.cpp" ]
+
+  configs = [ ":audio_config" ]
+
+  deps = [ ":ohaudio" ]
+
+  external_deps = [ "hilog:libhilog" ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
+
+ohos_executable("oh_audio_session_manager_test") {
+  stack_protector_ret = true
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+
+  install_enable = false
+
+  include_dirs = [
+    "../../../interfaces/kits/c/",
+    "../../../interfaces/kits/c/audio_manager/",
+    "../../../interfaces/kits/c/common/",
+    "../../../interfaces/kits/c/audio_renderer/",
+  ]
+
+  sources = [ "test/example/oh_audio_session_manager_test.cpp" ]
+
+  configs = [ ":audio_config" ]
+
+  deps = [
+    ":ohaudio",
+    "../audioutils:audio_utils",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}

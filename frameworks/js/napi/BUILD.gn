@@ -1,0 +1,146 @@
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/ohos/ace/ace.gni")
+import("../../../config.gni")
+import("../../../multimedia_aafwk.gni")
+
+ohos_shared_library("audio") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  include_dirs = [
+    "common",
+    "audiorenderer",
+    "audiorenderer/callback",
+    "audiocapturer",
+    "audiocapturer/callback",
+    "audioloopback",
+    "audioloopback/callback",
+    "audiomanager",
+    "audiomanager/callback",
+    "asrcontroller",
+  ]
+
+  if (audio_framework_feature_new_napi) {
+    sources = [
+      "asrcontroller/napi_asr_processing_controller.cpp",
+      "audiocapturer/callback/napi_audio_capturer_callback_inner.cpp",
+      "audiocapturer/callback/napi_audio_capturer_callbacks.cpp",
+      "audiocapturer/callback/napi_audio_capturer_device_change_callback.cpp",
+      "audiocapturer/callback/napi_audio_capturer_info_change_callback.cpp",
+      "audiocapturer/callback/napi_audio_capturer_read_data_callback.cpp",
+      "audiocapturer/callback/napi_capturer_period_position_callback.cpp",
+      "audiocapturer/callback/napi_capturer_position_callback.cpp",
+      "audiocapturer/napi_audio_capturer.cpp",
+      "audiomanager/callback/napi_active_volume_type_change_callback.cpp",
+      "audiomanager/callback/napi_appvolume_change_callback.cpp",
+      "audiomanager/callback/napi_audio_capturer_state_callback.cpp",
+      "audiomanager/callback/napi_audio_manager_callbacks.cpp",
+      "audiomanager/callback/napi_audio_manager_interrupt_callback.cpp",
+      "audiomanager/callback/napi_audio_micstatechange_callback.cpp",
+      "audiomanager/callback/napi_audio_renderer_state_callback.cpp",
+      "audiomanager/callback/napi_audio_ringermode_callback.cpp",
+      "audiomanager/callback/napi_audio_rounting_available_devicechange_callback.cpp",
+      "audiomanager/callback/napi_audio_routing_manager_callbacks.cpp",
+      "audiomanager/callback/napi_audio_scene_callbacks.cpp",
+      "audiomanager/callback/napi_audio_session_callback.cpp",
+      "audiomanager/callback/napi_audio_session_device_callback.cpp",
+      "audiomanager/callback/napi_audio_session_state_callback.cpp",
+      "audiomanager/callback/napi_audio_spatialization_manager_callback.cpp",
+      "audiomanager/callback/napi_audio_volume_key_event.cpp",
+      "audiomanager/callback/napi_audio_stream_volume_change_callback.cpp",
+      "audiomanager/callback/napi_audio_system_volume_change_callback.cpp",
+      "audiomanager/napi_audio_collaborative_manager.cpp",
+      "audiomanager/napi_audio_effect_manager.cpp",
+      "audiomanager/napi_audio_interrupt_manager.cpp",
+      "audiomanager/napi_audio_manager.cpp",
+      "audiomanager/napi_audio_routing_manager.cpp",
+      "audiomanager/napi_audio_session_manager.cpp",
+      "audiomanager/napi_audio_spatialization_manager.cpp",
+      "audiomanager/napi_audio_stream_manager.cpp",
+      "audiomanager/napi_audio_volume_group_manager.cpp",
+      "audiomanager/napi_audio_volume_manager.cpp",
+      "audiorenderer/callback/napi_audio_renderer_callback.cpp",
+      "audiorenderer/callback/napi_audio_renderer_callback_inner.cpp",
+      "audiorenderer/callback/napi_audio_renderer_device_change_callback.cpp",
+      "audiorenderer/callback/napi_audio_renderer_policy_service_died_callback.cpp",
+      "audiorenderer/callback/napi_audio_renderer_write_data_callback.cpp",
+      "audiorenderer/callback/napi_renderer_data_request_callback.cpp",
+      "audiorenderer/callback/napi_renderer_period_position_callback.cpp",
+      "audiorenderer/callback/napi_renderer_position_callback.cpp",
+      "audiorenderer/napi_audio_renderer.cpp",
+      "audioloopback/callback/napi_audio_loopback_callback_inner.cpp",
+      "audioloopback/callback/napi_audio_loopback_callback.cpp",
+      "audioloopback/napi_audio_loopback.cpp",
+      "common/napi_async_work.cpp",
+      "common/napi_audio_entry.cpp",
+      "common/napi_audio_enum.cpp",
+      "common/napi_audio_error.cpp",
+      "common/napi_param_utils.cpp",
+    ]
+  }
+
+  deps = [
+    "../../../services/audio_policy:audio_foundation",
+    "../../../services/audio_policy:audio_policy_client",
+    "../../../services/audio_service:audio_client",
+    "../../native/audiocapturer:audio_capturer",
+    "../../native/audiorenderer:audio_renderer",
+    "../../native/audioloopback:audio_loopback",
+    "../../native/audioutils:audio_utils",
+  ]
+
+  defines = []
+  if (audio_framework_feature_dtmf_tone) {
+    defines += [ "FEATURE_DTMF_TONE" ]
+
+    sources += [ "audiorenderer/napi_toneplayer.cpp" ]
+
+    deps += [ "../../native/toneplayer:audio_toneplayer" ]
+  }
+
+  external_deps = [
+    "ability_base:session_info",
+    "ability_base:want",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:mission_info",
+    "ability_runtime:napi_base_context",
+    "ability_runtime:wantagent_innerkits",
+    "bundle_framework:appexecfwk_base",
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "libuv:uv",
+    "napi:ace_napi",
+  ]
+
+  if (audio_framework_feature_hiview_enable) {
+    defines += [ "FEATURE_HIVIEW_ENABLE" ]
+    external_deps += [ "hiview:libxpower_event_js" ]
+  }
+
+  relative_install_dir = "module/multimedia"
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}

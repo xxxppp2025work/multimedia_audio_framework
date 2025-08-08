@@ -1,0 +1,69 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+AUDIO_SUBSYSTEM_DIR = "//foundation/multimedia/audio_framework"
+WORK_DIR = "$AUDIO_SUBSYSTEM_DIR/frameworks/js/napi"
+
+audio_utils_include = []
+
+audio_utils_source = []
+
+audio_include = []
+
+audio_sources = [
+  "$AUDIO_SUBSYSTEM_DIR/services/audio_policy/server/domain/device/src/audio_device_descriptor.cpp",
+  "$AUDIO_SUBSYSTEM_DIR/services/audio_service/client/src/audio_filter.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_audio_capturer_callback_inner.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_audio_capturer_callbacks.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_audio_capturer_device_change_callback.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_audio_capturer_info_change_callback.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_audio_capturer_read_data_callback.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_capturer_period_position_callback.cpp",
+  "$WORK_DIR/audiocapturer/callback/napi_capturer_position_callback.cpp",
+  "$WORK_DIR/audiocapturer/napi_audio_capturer.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_active_volume_type_change_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_appvolume_change_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_capturer_state_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_manager_callbacks.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_manager_interrupt_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_micstatechange_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_renderer_state_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_ringermode_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_rounting_available_devicechange_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_routing_manager_callbacks.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_scene_callbacks.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_spatialization_manager_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_stream_volume_change_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_system_volume_change_callback.cpp",
+  "$WORK_DIR/audiomanager/callback/napi_audio_volume_key_event.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_interrupt_manager.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_manager.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_routing_manager.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_spatialization_manager.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_stream_manager.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_volume_group_manager.cpp",
+  "$WORK_DIR/audiomanager/napi_audio_volume_manager.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_audio_renderer_callback.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_audio_renderer_callback_inner.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_audio_renderer_device_change_callback.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_audio_renderer_policy_service_died_callback.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_audio_renderer_write_data_callback.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_renderer_data_request_callback.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_renderer_period_position_callback.cpp",
+  "$WORK_DIR/audiorenderer/callback/napi_renderer_position_callback.cpp",
+  "$WORK_DIR/audiorenderer/napi_audio_renderer.cpp",
+  "$WORK_DIR/common/napi_async_work.cpp",
+  "$WORK_DIR/common/napi_audio_enum.cpp",
+  "$WORK_DIR/common/napi_audio_error.cpp",
+  "$WORK_DIR/common/napi_param_utils.cpp",
+]

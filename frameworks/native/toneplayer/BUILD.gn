@@ -1,0 +1,131 @@
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../../config.gni")
+
+config("audio_toneplayer_config") {
+  include_dirs = [
+    "include",
+    "../audiodefinitions/include",
+    "../audiostream/include",
+    "../audioutils/include",
+    "../audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../interfaces/inner_api/native/audiorenderer/include",
+    "../../../interfaces/inner_api/native/toneplayer/include",
+    "../../../services/audio_policy/include",
+    "../../../services/audio_service/client",
+    "../../../services/test",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+}
+
+if (!audio_framework_feature_dtmf_tone) {
+  group("audio_toneplayer") {
+    deps = []
+  }
+} else {
+  ohos_shared_library("audio_toneplayer") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      cfi = true
+      cfi_cross_dso = true
+      cfi_vcall_icall_only = true
+      debug = false
+      integer_overflow = true
+      ubsan = true
+      boundary_sanitize = true
+    }
+    install_enable = true
+
+    configs = [ ":audio_toneplayer_config" ]
+
+    sources = [ "src/toneplayer_impl.cpp" ]
+
+    defines = [ "FEATURE_DTMF_TONE" ]
+
+    deps = [
+      "../../../services/audio_service:audio_common",
+      "../../../services/audio_policy:audio_policy_client",
+      "../audiorenderer:audio_renderer",
+      "../audioutils:audio_utils",
+    ]
+
+    public_configs = [ ":audio_external_library_config" ]
+
+    external_deps = [
+      "c_utils:utils",
+      "eventhandler:libeventhandler",
+      "hilog:libhilog",
+      "init:libbegetutil",
+      "ipc:ipc_single",
+    ]
+
+    if (audio_telephony_core_service_enable) {
+      external_deps += [ "core_service:tel_core_service_api" ]
+      defines += [ "AUDIO_TEL_CORE_SERVICE_ENABLE" ]
+    }
+
+    if (audio_telephony_cellular_data_enable) {
+      external_deps += [ "cellular_data:tel_cellular_data_api" ]
+      defines += [ "AUIDO_TEL_CELLULAR_DATA_ENABLE" ]
+    }
+
+    public_external_deps = [ "bounds_checking_function:libsec_shared" ]
+
+    version_script = "../../../audio_framework.versionscript"
+    innerapi_tags = [ "platformsdk" ]
+
+    part_name = "audio_framework"
+    subsystem_name = "multimedia"
+  }
+}
+
+if (!audio_framework_feature_dtmf_tone) {
+  group("audio_toneplayer_test") {
+    deps = []
+  }
+} else {
+  ohos_executable("audio_toneplayer_test") {
+    install_enable = false
+
+    sources = [ "test/example/audio_toneplayer_test.cpp" ]
+
+    configs = [ ":audio_toneplayer_config" ]
+
+    defines = [ "FEATURE_DTMF_TONE" ]
+
+    deps = [ ":audio_toneplayer" ]
+
+    external_deps = [
+      "c_utils:utils",
+      "hilog:libhilog",
+    ]
+
+    part_name = "audio_framework"
+    subsystem_name = "multimedia"
+  }
+}
+
+config("audio_external_library_config") {
+  include_dirs = [
+    "include",
+    "../../../interfaces/inner_api/native/toneplayer/include",
+  ]
+}

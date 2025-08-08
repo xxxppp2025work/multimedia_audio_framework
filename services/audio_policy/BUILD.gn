@@ -1,0 +1,883 @@
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../accessibility.gni")
+import("../../appgallery.gni")
+import("../../audio_framework_test_sources.gni")
+import("../../av_session.gni")
+import("../../bluetooth_part.gni")
+import("../../config.gni")
+
+group("audio_policy_packages") {
+  deps = [
+    ":audio_affinity_config",
+    ":audio_converter_config",
+    ":audio_device_config",
+    ":audio_interrupt_policy_config",
+    ":audio_policy_global_config",
+    ":audio_policy_service",
+    ":audio_strategy_router",
+    ":audio_usage_strategy",
+    ":audio_volume_config",
+    "server/domain/volume:audio_safe_volume_notification_impl",
+  ]
+
+  if (audio_framework_feature_dtmf_tone) {
+    deps += [ ":audio_tone_dtmf_config" ]
+  }
+}
+
+config("audio_policy_public_config") {
+  include_dirs = [
+    "util/include",
+    "client/service/include",
+    "server/infra/ipc_proxy/include",
+    "common/definitions/include",
+    "common/include",
+    "client/interface",
+    "client/proxy/include",
+    "client/stub/include",
+    "server/domain/router",
+    "server/include",
+    "server/infra/async_action_handler/include",
+    "server/infra/state_monitor",
+    "server/stub/include",
+    "server/proxy/include",
+    "server/include/service",
+    "server/include/service/common",
+    "server/common/include",
+    "server/infra/config/parser/include",
+    "server/domain/effect/include",
+    "server/domain/pipe/include",
+    "server/domain/interrupt/include",
+    "server/domain/volume/include",
+    "server/domain/stream",
+    "server/domain/tone",
+    "server/domain/zone/include",
+    "server/include/service/interface",
+    "server/include/service/listener",
+    "server/infra/appclient/include",
+    "server/infra/datashare/include",
+    "server/domain/device/src/pnp",
+    "server/domain/device/src/sle",
+    "server/include/service/service",
+    "server/domain/device/include",
+    "server/domain/device/src/a2dp",
+    "server/src/service/concurrency",
+    "server/domain/session/include",
+    "server/service/service_main/include",
+    "../audio_service/client/include",
+    "../audio_service/common/include",
+    "../audio_service/common/include/dfx",
+    "../../frameworks/native/audioinnercall/include",
+    "../../frameworks/native/audiorenderer/include",
+    "../../frameworks/native/audioadapter/include",
+    "../../frameworks/native/audiodefinitions/include",
+    "../../frameworks/native/audiopolicy/include",
+    "../../frameworks/native/audioutils/include",
+    "../../frameworks/native/bluetoothclient",
+    "../../frameworks/native/hdiadapter_new/include",
+    "../../frameworks/native/hdiadapter_new/include/common",
+    "../../interfaces/inner_api/native/audiocommon/include",
+    "../../interfaces/inner_api/native/audiomanager/include",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+
+  if (accessibility_enable == true) {
+    cflags += [ "-DACCESSIBILITY_ENABLE" ]
+  }
+
+  if (bluetooth_part_enable == true) {
+    cflags += [ "-DBLUETOOTH_ENABLE" ]
+  }
+
+  if (avsession_part_enable == true && !(use_libfuzzer || use_clang_coverage)) {
+    cflags += [ "-DAVSESSION_ENABLE" ]
+  }
+
+  ldflags = [ "-Wl" ]
+}
+
+ohos_shared_library("audio_setting_provider") {
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+
+  include_dirs = [
+    "../../services/audio_policy/server/infra/datashare/include",
+    "../../services/audio_policy/server/domain/device/src/pnp",
+    "../../interfaces/inner_api/native/audiocommon/include",
+  ]
+
+  sources = [ "server/infra/datashare/src/audio_setting_provider.cpp" ]
+
+  deps = [ "../../frameworks/native/audioutils:audio_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "os_account:os_account_innerkits",
+    "samgr:samgr_proxy",
+  ]
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  defines = []
+  if (audio_framework_feature_support_os_account) {
+    defines += [ "SUPPORT_USER_ACCOUNT" ]
+  }
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
+
+audio_ohos_library("audio_policy_service") {
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+  sources = [
+    "../audio_service/client/src/audio_filter.cpp",
+    "../audio_service/client/src/audio_manager_listener_stub_impl.cpp",
+    "../audio_service/client/src/core_service_provider_stub.cpp",
+    "../audio_service/client/src/microphone_descriptor.cpp",
+    "../audio_service/client/src/policy_provider_stub.cpp",
+    "server/common/src/audio_group_handle.cpp",
+    "server/domain/device/src/a2dp/audio_a2dp_device.cpp",
+    "server/domain/device/src/audio_active_device.cpp",
+    "server/domain/device/src/audio_affinity_manager.cpp",
+    "server/domain/device/src/audio_connected_device.cpp",
+    "server/domain/device/src/audio_device_common.cpp",
+    "server/domain/device/src/audio_device_lock.cpp",
+    "server/domain/device/src/audio_device_manager.cpp",
+    "server/domain/device/src/audio_device_status.cpp",
+    "server/domain/device/src/audio_microphone_descriptor.cpp",
+    "server/domain/device/src/audio_recovery_device.cpp",
+    "server/domain/device/src/audio_router_map.cpp",
+    "server/domain/device/src/audio_scene_manager.cpp",
+    "server/domain/device/src/audio_state_manager.cpp",
+    "server/domain/device/src/device_status_listener.cpp",
+    "server/domain/device/src/sle/sle_audio_device_manager.cpp",
+    "server/domain/effect/src/audio_collaborative_service.cpp",
+    "server/domain/effect/src/audio_effect_service.cpp",
+    "server/domain/effect/src/audio_spatialization_service.cpp",
+    "server/domain/interrupt/src/audio_interrupt_dfx_collector.cpp",
+    "server/domain/interrupt/src/audio_interrupt_group_info.cpp",
+    "server/domain/interrupt/src/audio_interrupt_service.cpp",
+    "server/domain/interrupt/src/audio_interrupt_service_ext.cpp",
+    "server/domain/interrupt/src/audio_interrupt_zone.cpp",
+    "server/domain/interrupt/src/power_state_listener.cpp",
+    "server/domain/pipe/src/audio_a2dp_offload_flag.cpp",
+    "server/domain/pipe/src/audio_a2dp_offload_manager.cpp",
+    "server/domain/pipe/src/audio_capturer_session.cpp",
+    "server/domain/pipe/src/audio_concurrency_service.cpp",
+    "server/domain/pipe/src/audio_definition_adapter_info.cpp",
+    "server/domain/pipe/src/audio_definition_policy_utils.cpp",
+    "server/domain/pipe/src/audio_ec_manager.cpp",
+    "server/domain/pipe/src/audio_global_config_manager.cpp",
+    "server/domain/pipe/src/audio_iohandle_map.cpp",
+    "server/domain/pipe/src/audio_offload_stream.cpp",
+    "server/domain/pipe/src/audio_pipe_manager.cpp",
+    "server/domain/pipe/src/audio_pipe_selector.cpp",
+    "server/domain/pipe/src/audio_policy_config_manager.cpp",
+    "server/domain/router/app_select_router.cpp",
+    "server/domain/router/audio_router_center.cpp",
+    "server/domain/router/cockpit_phone_router.cpp",
+    "server/domain/router/default_router.cpp",
+    "server/domain/router/package_filter_router.cpp",
+    "server/domain/router/pair_device_router.cpp",
+    "server/domain/router/privacy_priority_router.cpp",
+    "server/domain/router/public_priority_router.cpp",
+    "server/domain/router/stream_filter_router.cpp",
+    "server/domain/router/user_select_router.cpp",
+    "server/domain/session/src/audio_session.cpp",
+    "server/domain/session/src/audio_session_service.cpp",
+    "server/domain/session/src/audio_session_state_monitor.cpp",
+    "server/domain/stream/audio_stream_collector.cpp",
+    "server/domain/stream/audio_stream_id_allocator.cpp",
+    "server/domain/tone/audio_tone_manager.cpp",
+    "server/domain/volume/src/audio_adapter_manager.cpp",
+    "server/domain/volume/src/audio_adapter_manager_handler.cpp",
+    "server/domain/volume/src/audio_volume_group_info.cpp",
+    "server/domain/volume/src/audio_volume_manager.cpp",
+    "server/domain/volume/src/volume_data_maintainer.cpp",
+    "server/domain/zone/src/audio_zone.cpp",
+    "server/domain/zone/src/audio_zone_client_manager.cpp",
+    "server/domain/zone/src/audio_zone_interrupt_reporter.cpp",
+    "server/domain/zone/src/audio_zone_service.cpp",
+    "server/infra/appclient/src/app_state_listener.cpp",
+    "server/infra/appclient/src/audio_background_manager.cpp",
+    "server/infra/appclient/src/audio_bundle_manager.cpp",
+    "server/infra/appclient/src/background_task_listener.cpp",
+    "server/infra/appclient/src/client_type_manager.cpp",
+    "server/infra/appclient/src/client_type_manager_handler.cpp",
+    "server/infra/async_action_handler/src/audio_policy_async_action_handler.cpp",
+    "server/infra/async_action_handler/src/audio_policy_server_handler.cpp",
+    "server/infra/config/parser/src/audio_affinity_parser.cpp",
+    "server/infra/config/parser/src/audio_concurrency_parser.cpp",
+    "server/infra/config/parser/src/audio_converter_parser.cpp",
+    "server/infra/config/parser/src/audio_device_parser.cpp",
+    "server/infra/config/parser/src/audio_effect_config_parser.cpp",
+    "server/infra/config/parser/src/audio_focus_parser.cpp",
+    "server/infra/config/parser/src/audio_policy_config_parser.cpp",
+    "server/infra/config/parser/src/audio_policy_global_parser.cpp",
+    "server/infra/config/parser/src/audio_strategy_router_parser.cpp",
+    "server/infra/config/parser/src/audio_usage_strategy_parser.cpp",
+    "server/infra/config/parser/src/audio_volume_parser.cpp",
+    "server/infra/datashare/src/audio_policy_datashare_listener.cpp",
+    "server/infra/datashare/src/audio_policy_utils.cpp",
+    "server/infra/ipc_proxy/src/audio_ability_manager.cpp",
+    "server/infra/ipc_proxy/src/audio_policy_client_holder.cpp",
+    "server/infra/ipc_proxy/src/audio_server_proxy.cpp",
+    "server/infra/state_monitor/audio_policy_state_monitor.cpp",
+    "server/service/service_main/src/audio_core_service.cpp",
+    "server/service/service_main/src/audio_core_service_entry.cpp",
+    "server/service/service_main/src/audio_core_service_private.cpp",
+    "server/service/service_main/src/audio_core_service_utils.cpp",
+    "server/service/service_main/src/audio_policy_dump.cpp",
+    "server/service/service_main/src/audio_policy_server.cpp",
+    "server/service/service_main/src/audio_policy_service.cpp",
+    "server/service/service_main/src/device_init_callback.cpp",
+    "server/src/audio_client_tracker_callback_listener.cpp",
+    "server/src/audio_client_tracker_callback_service.cpp",
+    "server/src/audio_policy_manager_listener.cpp",
+    "server/src/audio_spatialization_state_change_callback.cpp",
+    "server/src/audio_spatialization_state_change_listener.cpp",
+  ]
+
+  defines = []
+  if (audio_framework_feature_wired_audio) {
+    defines += [ "AUDIO_WIRED_DETECT" ]
+    sources += [
+      "server/domain/device/src/pnp/audio_input_thread.cpp",
+      "server/domain/device/src/pnp/audio_pnp_server.cpp",
+      "server/domain/device/src/pnp/audio_socket_thread.cpp",
+    ]
+  }
+
+  if (build_variant == "user") {
+    defines += [ "AUDIO_BUILD_VARIANT_USER" ]
+  } else if (build_variant == "root") {
+    defines += [ "AUDIO_BUILD_VARIANT_ROOT" ]
+  }
+
+  if (use_libfuzzer || use_clang_coverage) {
+    defines += [ "TEST_COVERAGE" ]
+  }
+
+  if (audio_framework_feature_support_os_account) {
+    defines += [ "SUPPORT_USER_ACCOUNT" ]
+  }
+
+  if (audio_framework_feature_dtmf_tone) {
+    sources += [ "server/infra/config/parser/src/audio_tone_parser.cpp" ]
+    defines += [ "FEATURE_DTMF_TONE" ]
+  }
+
+  if (is_emulator) {
+    defines += [ "IS_EMULATOR" ]
+  }
+
+  if (audio_framework_feature_inner_capturer) {
+    defines += [ "HAS_FEATURE_INNERCAPTURER" ]
+  }
+
+  public_configs = [ ":audio_policy_public_config" ]
+
+  deps = [
+    "../../services/audio_service/idl:audio_framework_interface",
+    "../../frameworks/native/audioadapter:pro_audio_service_adapter",
+    "../../frameworks/native/audiodefinitions:audio_definitions",
+    "../../frameworks/native/audioinnercall:audio_inner_call",
+    "../../frameworks/native/audioutils:audio_utils",
+    "../../frameworks/native/audioutils:audio_xml_utils",
+    "../audio_policy:audio_config.para",
+    "../audio_policy:audio_config.para.dac",
+    "../audio_policy:audio_foundation",
+    "../audio_policy:audio_setting_provider",
+    "../audio_service:audio_common",
+  ]
+
+  external_deps = [
+    "ability_base:session_info",
+    "ability_base:want",
+    "ability_base:zuri",
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:app_context",
+    "ability_runtime:app_manager",
+    "ability_runtime:dataobs_manager",
+    "ability_runtime:extension_manager",
+    "ability_runtime:wantagent_innerkits",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
+    "access_token:libtokenid_sdk",
+    "access_token:libtokensetproc_shared",
+    "background_task_mgr:bgtaskmgr_innerkits",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "drivers_interface_audio:libaudio_proxy_5.0",
+    "eventhandler:libeventhandler",
+    "hdf_core:libhdf_host",
+    "hdf_core:libhdf_ipc_adapter",
+    "hdf_core:libhdf_utils",
+    "hdf_core:libhdi",
+    "hdf_core:libpub_utils",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "media_foundation:media_monitor_client",
+    "media_foundation:media_monitor_common",
+    "os_account:os_account_innerkits",
+    "power_manager:power_setting",
+    "power_manager:powermgr_client",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "window_manager:session_manager_lite",
+  ]
+
+  public_external_deps = [ "ffrt:libffrt" ]
+
+  public_external_deps += [
+    "libxml2:libxml2",
+    "openssl:libcrypto_shared",
+  ]
+
+  if (audio_framework_feature_usb_audio) {
+    defines += [ "USB_ENABLE" ]
+    external_deps += [ "usb_manager:usbsrv_client" ]
+    sources += [ "server/domain/device/src/pnp/audio_usb_manager.cpp" ]
+  }
+
+  if (audio_framework_feature_detect_soundbox) {
+    defines += [ "DETECT_SOUNDBOX" ]
+  }
+
+  if (audio_framework_config_policy_enable) {
+    defines += [ "USE_CONFIG_POLICY" ]
+    external_deps += [ "config_policy:configpolicy_util" ]
+  }
+
+  if (appgallery_part_enable == true) {
+    defines += [ "FEATURE_APPGALLERY" ]
+  }
+
+  if (bluetooth_part_enable == true) {
+    deps += [ "../../frameworks/native/bluetoothclient:audio_bluetooth_client" ]
+    external_deps += [ "bluetooth:btframework" ]
+  }
+
+  if (audio_framework_feature_input) {
+    defines += [ "FEATURE_MULTIMODALINPUT_INPUT" ]
+    external_deps += [ "input:libmmi-client" ]
+  }
+
+  if (audio_framework_feature_device_manager) {
+    defines += [ "FEATURE_DEVICE_MANAGER" ]
+    external_deps += [ "device_manager:devicemanagersdk" ]
+  }
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+  version_script = "libaudio_policy_service.versionscript"
+}
+
+ohos_prebuilt_etc("audio_interrupt_policy_config") {
+  source = "server/infra/config/file/audio_interrupt_policy_config.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_strategy_router") {
+  source = "server/infra/config/file/audio_strategy_router.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_usage_strategy") {
+  source = "server/infra/config/file/audio_usage_strategy.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_device_config") {
+  source = "server/infra/config/file/audio_device_privacy.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_volume_config") {
+  source = "server/infra/config/file/audio_volume_config.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_affinity_config") {
+  source = "server/infra/config/file/audio_affinity_config.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_policy_global_config") {
+  source = "server/infra/config/file/audio_policy_global_config.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+if (audio_framework_feature_dtmf_tone) {
+  ohos_prebuilt_etc("audio_tone_dtmf_config") {
+    source = "server/infra/config/file/audio_tone_dtmf_config.xml"
+
+    subsystem_name = "multimedia"
+    relative_install_dir = "audio"
+    part_name = "audio_framework"
+  }
+}
+
+ohos_prebuilt_etc("audio_converter_config") {
+  source = "server/infra/config/file/audio_converter_config.xml"
+
+  subsystem_name = "multimedia"
+  relative_install_dir = "audio"
+  part_name = "audio_framework"
+}
+
+ohos_prebuilt_etc("audio_config.para") {
+  source = "etc/audio_config.para"
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+  module_install_dir = "etc/param"
+}
+
+ohos_prebuilt_etc("audio_config.para.dac") {
+  source = "etc/audio_config.para.dac"
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+  module_install_dir = "etc/param"
+}
+
+config("audio_policy_client_config") {
+  include_dirs = [
+    "client/proxy/include",
+    "client/stub/include",
+    "client/service/include",
+    "common/include",
+    "client/interface",
+    "server/include",
+    "server/proxy/include",
+    "server/stub/include",
+    "server/service/service_main/include",
+    "../audio_service/client/include",
+    "../audio_service/common/include",
+    "../../frameworks/native/audiodefinitions/include",
+    "../../frameworks/native/audiopolicy/include",
+    "../../interfaces/inner_api/native/audiocommon/include",
+    "../../interfaces/inner_api/native/audiomanager/include",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+}
+
+audio_ohos_library("audio_policy_client") {
+  branch_protector_ret = "pac_ret"
+  install_enable = true
+
+  defines = []
+  if (audio_framework_feature_dtmf_tone) {
+    defines += [ "FEATURE_DTMF_TONE" ]
+  }
+
+  if (audio_framework_feature_inner_capturer) {
+    defines += [ "HAS_FEATURE_INNERCAPTURER" ]
+  }
+
+  sources = [
+    "../audio_policy/server/domain/device/src/audio_device_descriptor.cpp",
+    "../audio_service/client/src/audio_filter.cpp",
+    "../audio_service/client/src/microphone_descriptor.cpp",
+    "client/service/src/audio_anahs_manager_listener.cpp",
+    "client/service/src/audio_policy_manager.cpp",
+    "client/service/src/audio_policy_manager_device.cpp",
+    "client/service/src/audio_policy_manager_zone.cpp",
+    "client/service/src/audio_routing_manager_listener.cpp",
+    "client/service/src/audio_zone_manager.cpp",
+    "client/stub/src/audio_policy_client_stub_impl.cpp",
+    "client/stub/src/audio_policy_manager_listener_stub_impl.cpp",
+    "client/stub/src/audio_zone_client.cpp",
+    "client/stub/src/sle_audio_operation_callback_stub_impl.cpp",
+    "server/domain/volume/src/audio_volume_group_info.cpp",
+    "server/src/audio_client_tracker_callback_service.cpp",
+    "server/src/audio_spatialization_state_change_listener.cpp",
+  ]
+
+  deps = [
+    "../../services/audio_service/idl:audio_framework_interface",
+    "../../frameworks/native/audiodefinitions:audio_definitions",
+    "../../frameworks/native/audioutils:audio_utils",
+  ]
+
+  public_configs = [ ":audio_policy_client_config" ]
+
+  include_dirs = [
+    "../../frameworks/native/audioutils/include",
+    "../../services/audio_service/common/include/",
+  ]
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
+  ]
+  subsystem_name = "multimedia"
+  innerapi_tags = [ "platformsdk" ]
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+  part_name = "audio_framework"
+
+  ldflags = [ "-Wl,-Bsymbolic" ]
+  version_script = "libaudio_policy_client.versionscript"
+}
+
+group("audio_policy_test_packages") {
+  testonly = true
+
+  deps = [
+    ":audio_dump_test",
+    ":audio_policy_test",
+    "test:audio_policy_unittest_packages",
+    "client/stub:audio_zone_client_unit_test",
+    "server/infra/config/parser/test:audio_policy_config_parser_unittest_packages",
+    "server/domain/device/test:audio_device_status_extended_test",
+    "server/domain/effect/test:audio_spatialization_service_extended_test",
+    "server/service/service_main/test:audio_policy_dump_unit_test",
+    "server/service/service_main/test:audio_policy_server_extended_test",
+    "server/service/service_main/test:audio_policy_service_ext_unit_test",
+    "server/service/service_main/test:device_init_callback_unit_test",
+    "server/infra/state_monitor/test:audio_policy_state_monitor_unittest_packages",
+    "server/common/test:audio_policy_server_common_unittest_packages",
+  ]
+}
+
+ohos_executable("audio_dump_test") {
+  install_enable = false
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  sources = [ "test/example/audio_dump_test.cpp" ]
+
+  configs = [ ":audio_policy_client_config" ]
+
+  deps = [
+    "../audio_policy:audio_policy_client",
+    "../audio_service:audio_client",
+  ]
+
+  include_dirs = []
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
+
+ohos_executable("audio_policy_test") {
+  install_enable = false
+
+  sources = [ "test/example/audio_policy_test.cpp" ]
+
+  configs = [ ":audio_policy_client_config" ]
+
+  deps = [
+    "../audio_policy:audio_foundation",
+    "../audio_policy:audio_policy_client",
+    "../audio_service:audio_client",
+  ]
+
+  include_dirs = []
+
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
+
+config("audio_foundation_public_config") {
+  include_dirs = [
+    "util/include",
+    "server/domain/device/include",
+    "server/domain/effect/include",
+    "../audio_service/util/include",
+    "../../interfaces/inner_api/native/audiocommon/include",
+    "../../interfaces/inner_api/native/audiomanager/include",
+    "../../frameworks/native/audiopolicy/include",
+  ]
+}
+
+ohos_shared_library("audio_foundation") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+  sources = [
+    "../audio_service/client/src/audio_filter.cpp",
+    "server/domain/device/src/audio_device_descriptor.cpp",
+    "server/domain/device/src/audio_device_type.cpp",
+    "server/domain/effect/src/audio_effect_map.cpp",
+  ]
+
+  public_configs = [
+    ":audio_foundation_public_config",
+    "../../services/audio_service/idl:audio_service_sa_idl_config",
+    "../../services/audio_service/idl:audio_policy_sa_idl_config",
+  ]
+
+  deps = [
+    "../../frameworks/native/audioutils:audio_utils",
+    "../audio_policy:audio_policy_client",
+    "../audio_service:audio_common",
+  ]
+
+  external_deps = [ "hilog:libhilog" ]
+
+  public_external_deps = [ "c_utils:utils" ]
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  defines = []
+  if (audio_framework_feature_detect_soundbox) {
+    defines += [ "DETECT_SOUNDBOX" ]
+  }
+
+  innerapi_tags = [ "platformsdk" ]
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+}
+
+config("audio_manager_client_public_config") {
+  include_dirs = [
+    "util/include",
+    "client/service/include",
+    "server/domain/device/include",
+    "server/domain/effect/include",
+    "../../frameworks/native/audiodefinitions/include",
+    "../../frameworks/native/audiodefinitions/include/common",
+    "../../frameworks/native/hdiadapter_new/include/common",
+  ]
+}
+
+ohos_shared_library("audio_manager_client") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+  sources = [
+    "../audio_service/client/src/audio_anahs_manager.cpp",
+    "client/service/src/audio_general_manager.cpp",
+  ]
+
+  public_configs = [ ":audio_manager_client_public_config" ]
+
+  deps = [
+    ":audio_foundation",
+    ":audio_policy_client",
+    ":audio_policy_common",
+    "../../frameworks/native/audioutils:audio_utils",
+    "../audio_service:audio_common",
+  ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "eventhandler:libeventhandler",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
+  ]
+
+  defines = []
+  if (audio_framework_feature_inner_capturer) {
+    defines += [ "HAS_FEATURE_INNERCAPTURER" ]
+  }
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  innerapi_tags = [ "platformsdk" ]
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+}
+
+config("audio_policy_common_public_config") {
+  include_dirs = [
+    "../../interfaces/inner_api/native/audiomanager/include",
+    "../../interfaces/inner_api/native/audiocommon/include",
+    "../audio_service/client/include",
+  ]
+}
+
+ohos_shared_library("audio_policy_common") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+  sources = [
+    "../audio_service/client/src/audio_focus_info_change_callback_impl.cpp",
+    "../audio_service/client/src/resource_manager_adapter.cpp",
+  ]
+
+  public_configs = [ ":audio_policy_common_public_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
+    "hilog:libhilog",
+    "i18n:intl_util",
+    "ipc:ipc_core",
+    "resource_management:global_resmgr",
+  ]
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  innerapi_tags = [ "platformsdk" ]
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+}
+
+config("audio_policy_ipc_config") {
+  include_dirs = [ "common/include" ]
+}
+
+ohos_shared_library("audio_policy_ipc") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+  sources = []
+
+  public_configs = [ ":audio_policy_ipc_config" ]
+
+  external_deps = []
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  innerapi_tags = [ "platformsdk" ]
+  subsystem_name = "multimedia"
+  part_name = "audio_framework"
+}

@@ -1,0 +1,140 @@
+# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("../../../audio_framework_test_sources.gni")
+import("../../../config.gni")
+import("../../../sensor.gni")
+import("../../../window_manager.gni")
+
+config("audio_effect_config") {
+  include_dirs = [
+    "include",
+    "../audiostream/include",
+    "../../../interfaces/inner_api/native/audiorenderer/include",
+    "../../../interfaces/inner_api/native/audiocommon/include",
+    "../../../interfaces/inner_api/native/audiomanager/include",
+    "../../../services/audio_service/client/include",
+    "../../../services/audio_service/common/include",
+    "../../../services/audio_service/test/example",
+    "../../../services/audio_policy/server/infra/datashare/include",
+    "../../../services/audio_policy/util/include",
+    "../audioschedule/include",
+  ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-fno-access-control",
+  ]
+
+  if (sensor_enable == true) {
+    cflags += [ "-DSENSOR_ENABLE" ]
+  }
+
+  if (window_manager_enable == true) {
+    cflags += [ "-DWINDOW_MANAGER_ENABLE" ]
+  }
+}
+
+config("audio_effect_integration_config") {
+  include_dirs = [ "../../../interfaces/inner_api/native/audiocommon/include" ]
+}
+
+audio_ohos_library("audio_effect") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+  install_enable = true
+
+  configs = [ ":audio_effect_config" ]
+
+  sources = [
+    "src/audio_effect_chain.cpp",
+    "src/audio_effect_chain_manager.cpp",
+    "src/audio_effect_hdi_param.cpp",
+    "src/audio_effect_rotation.cpp",
+    "src/audio_effect_volume.cpp",
+    "src/audio_enhance_chain.cpp",
+    "src/audio_enhance_chain_manager_impl.cpp",
+    "src/audio_head_tracker.cpp",
+    "src/chain_pool_impl.cpp",
+    "src/thread_handler_impl.cpp",
+  ]
+
+  deps = [
+    "../../../services/audio_policy:audio_foundation",
+    "../../../services/audio_policy:audio_setting_provider",
+    "../../../services/audio_service:audio_common",
+    "../audioschedule:audio_schedule",
+    "../audioutils:audio_utils",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "drivers_interface_audio:libeffect_proxy_1.0",
+    "hdf_core:libhdf_utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "media_foundation:media_monitor_client",
+    "os_account:os_account_innerkits",
+    "samgr:samgr_proxy",
+  ]
+  defines = []
+  if (!audio_framework_feature_new_engine_flag) {
+    sources += [
+      "src/audio_effect_chain_adapter.cpp",
+      "src/audio_enhance_chain_adapter.cpp",
+    ]
+    external_deps += [
+      "pulseaudio:pulse",
+    ]
+    defines += [ "SUPPORT_OLD_ENGINE" ]
+  }
+  if (sensor_enable == true) {
+    external_deps += [ "sensor:sensor_interface_native" ]
+  }
+
+  cflags = [ "-Os" ]
+  cflags_cc = cflags
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+  version_script = "libaudio_effect.versionscript"
+}
+
+ohos_static_library("audio_effect_integration") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = false
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+  }
+
+  public_configs = [ ":audio_effect_integration_config" ]
+
+  part_name = "audio_framework"
+  subsystem_name = "multimedia"
+}
